@@ -1,12 +1,12 @@
 CC := gcc
 WFLAGS := -Wall -Wextra -Wshadow -Wstrict-overflow -Wpedantic
 DBG_FLAGS := -O0 -g -save-temps
-REL_FLAGS := -O2
-CFLAGS = -c -std=c11 -flto -march=native $(DBG_FLAGS) $(WFLAGS)
-LDFLAGS = -g -lm
+REL_FLAGS := -O3 -flto -march=native -mfpmath=sse
+CFLAGS = -c -std=c11 $(REL_FLAGS) $(WFLAGS)
+LDFLAGS =
 CD := cd bin/temp;\
 
-SOURCES=core.c haffman.c logging.c stdsafe.c pqueue.c btree.c asciitree.c
+SOURCES=core.c haffman.c logging.c stdsafe.c pqueue.c btree.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=haff
 

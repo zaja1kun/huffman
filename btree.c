@@ -1,5 +1,12 @@
-#include "btree.h"
+/**
+  @file btree.c
+  @brief Simple binary tree implementation
 
+  @author Zaitsev Yury
+  @copyright Copyright (c) 2016, Zaitsev Yury
+  @license This file is released under the GNU Public License
+*/
+#include "btree.h"
 
 bt_t *bt_init(void) {
     bt_t *newTree = (bt_t*)s_malloc(sizeof(bt_t));
@@ -8,19 +15,26 @@ bt_t *bt_init(void) {
     return newTree;
 }
 
-int bt_search(const bt_t * const tree, btdata_t item) {
-    const btnode_t *curNode = tree->root;
-    while(true) {
-        if (!curNode) {
-            return 0;
-        } else if(item.symb == curNode->data.symb) {
-            return 1;
-        } else if(item.freq > curNode->data.freq) {
-            curNode = curNode->right;
-        } else {
-            curNode = curNode->left;
-        }
+/**
+  @brief Destroy subtree nodes
+
+  Frees all the nodes recursivly.
+  @param[in] tree btnode_t ** Subtree root
+*/
+void bt_freeSubtree(btnode_t **subtreeRoot) {
+    if(!subtreeRoot || !*subtreeRoot) {
+        return;
     }
+    bt_freeSubtree(&(*subtreeRoot)->left);
+    bt_freeSubtree(&(*subtreeRoot)->right);
+    free(*subtreeRoot);
+    *subtreeRoot = NULL;
+}
+
+void bt_free(bt_t **tree) {
+    bt_freeSubtree(&(*tree)->root);
+    free(*tree);
+    *tree = NULL;
 }
 
 int bt_insert(bt_t *tree, btdata_t item) {
@@ -45,37 +59,6 @@ int bt_insert(bt_t *tree, btdata_t item) {
             curNode = curNode->left;
         }
     }
-}
-
-void bt_printSubtree(const btnode_t * const subtreeRoot) {
-    if(!subtreeRoot) {
-        return;
-    }
-    bt_printSubtree(subtreeRoot->left);
-    printf("  %lu - %c\n", subtreeRoot->data.freq, subtreeRoot->data.symb);
-    bt_printSubtree(subtreeRoot->right);
-}
-
-void bt_print(const bt_t * const my_tree) {
-    printf("%s\n", "Tree entries:");
-    bt_printSubtree(my_tree->root);
-    printf("\n");
-}
-
-void bt_freeSubtree(btnode_t **subtreeRoot) {
-    if(!subtreeRoot || !*subtreeRoot) {
-        return;
-    }
-    bt_freeSubtree(&(*subtreeRoot)->left);
-    bt_freeSubtree(&(*subtreeRoot)->right);
-    free(*subtreeRoot);
-    *subtreeRoot = NULL;
-}
-
-void bt_free(bt_t **tree) {
-    bt_freeSubtree(&(*tree)->root);
-    free(*tree);
-    *tree = NULL;
 }
 
 bt_t *bt_join(bt_t **tree1, bt_t **tree2) {

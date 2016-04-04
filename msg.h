@@ -1,3 +1,11 @@
+/**
+  @file msg.h
+  @brief App text messages
+
+  @author Zaitsev Yury
+  @copyright Copyright (c) 2016, Zaitsev Yury
+  @license This file is released under the GNU Public License
+*/
 #ifndef ERRORMSG_H
 #define ERRORMSG_H
 

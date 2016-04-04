@@ -1,3 +1,11 @@
+/**
+  @file logging.c
+  @brief Message printing functions
+
+  @author Zaitsev Yury
+  @copyright Copyright (c) 2016, Zaitsev Yury
+  @license This file is released under the GNU Public License
+*/
 #include "logging.h"
 #include <stdio.h>
 

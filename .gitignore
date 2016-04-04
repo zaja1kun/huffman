@@ -1,5 +1,6 @@
 bin/
 static/
+docs/
 *.o
 *.s
 *.i

@@ -1,3 +1,11 @@
+/**
+  @file pqueue.c
+  @brief Priority queue implementation using heap
+
+  @author Zaitsev Yury
+  @copyright Copyright (c) 2016, Zaitsev Yury
+  @license This file is released under the GNU Public License
+*/
 #include "pqueue.h"
 #include <stdlib.h>
 #include "stdsafe.h"
@@ -17,6 +25,12 @@ void pq_free(pq_t **pq) {
     *pq = NULL;
 }
 
+/**
+  @brief Swaps two elements of the heap
+
+  @param[in] a pqnode_t * Pointer to the first element
+  @param[in] b pqnode_t * Pointer to the second element
+*/
 void pq_swapNodes(pqnode_t *a, pqnode_t *b) {
     pqnode_t temp = *a;
     *a = *b;

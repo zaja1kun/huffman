@@ -1,9 +1,16 @@
+/**
+  @file stdsafe.c
+  @brief Safe versions of standard functions for memory allocation, operations with files, etc.
+
+  @author Zaitsev Yury
+  @copyright Copyright (c) 2016, Zaitsev Yury
+  @license This file is released under the GNU Public License
+*/
 #include "stdsafe.h"
-#include <stdlib.h>
 #include "core.h"
 
 void* s_malloc(size_t size) {
-    void *buf = malloc(size);
+    void *buf = aligned_alloc(128, size);
     if(!buf && size) {
         printError(S_MALLOC_FAILED);
         s_exit(0);
@@ -20,7 +27,7 @@ void *s_calloc(size_t nmemb, size_t size) {
     return buf;
 }
 
-void *s_realloc(void *ptr, unsigned size) {
+void *s_realloc(void *ptr, size_t size) {
     void *buf = realloc(ptr, size);
     if(!buf && size) {
         printError(S_REALLOC_FAILED);
@@ -29,9 +36,12 @@ void *s_realloc(void *ptr, unsigned size) {
     return buf;
 }
 
-void s_free(void **ptr) {
-    free(*ptr);
-    *ptr = NULL;
+void s_exit(int code) {
+    size_t infoMsgLength = snprintf(NULL, 0, "%s %d", S_EXIT_MSG, code) + 1;
+    char *infoMsg = (char*)s_malloc(infoMsgLength*sizeof(char));
+    snprintf(infoMsg, infoMsgLength, "%s %d", S_EXIT_MSG, code);
+    printInfo(infoMsg);
+    exit(0);
 }
 
 FILE* s_fopen(const char *filename, const char *mode) {
@@ -48,18 +58,10 @@ FILE* s_fopen(const char *filename, const char *mode) {
     return file;
 }
 
-void s_exit(int code) {
-    size_t infoMsgLength = snprintf(NULL, 0, "%s %d", S_EXIT_MSG, code) + 1;
-    char *infoMsg = (char*)s_malloc(infoMsgLength*sizeof(char));
-    snprintf(infoMsg, infoMsgLength, "%s %d", S_EXIT_MSG, code);
-    printInfo(infoMsg);
-    exit(0);
-}
-
-uint64_t getFileSize(FILE * const file) {
-    uint64_t curPos = ftell(file);
+FILESIZE_T getFileSize(FILE * const file) {
+    FILESIZE_T curPos = ftell(file);
     fseek(file, 0, SEEK_END);
-    uint64_t size = ftell(file);
+    FILESIZE_T size = ftell(file);
     fseek(file, curPos, SEEK_SET);
     return size;
 }
