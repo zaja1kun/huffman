@@ -1,12 +1,12 @@
 /**
-  @file haffman.c
-  @brief Haffman encoding and decoding algorithms
+  @file huffman.c
+  @brief Huffman encoding and decoding algorithms
 
   @author Zaitsev Yury
   @copyright Copyright (c) 2016, Zaitsev Yury
   @license This file is released under the GNU Public License
 */
-#include "haffman.h"
+#include "huffman.h"
 #include <limits.h>
 #include "btree.h"
 #include "core.h"
@@ -23,59 +23,59 @@
 #define OUTBUF_T_MAX (OUTBUF_T_LIM - 1)
 
 /**
-  Haffman table element.
+  Huffman table element.
 */
 typedef struct {
-    uint64_t code;  /**< Haffman code of the symbol */
+    uint64_t code;  /**< Huffman code of the symbol */
     uint8_t len;    /**< Code length */
 } htdata_t;
 
 /**
-  @brief Recursively generates haffman table using haffman tree root
+  @brief Recursively generates huffman table using huffman tree root
 
-  @param[in] subtreeRoot btnode_t * Pointer to the haffman tree root
-  @param[in] haffmanTable htdata_t * Pointer to the haffman table
-  @param[in] code uint64_t Haffman code of the previos node of the tree
+  @param[in] subtreeRoot btnode_t * Pointer to the huffman tree root
+  @param[in] huffmanTable htdata_t * Pointer to the huffman table
+  @param[in] code uint64_t Huffman code of the previos node of the tree
   @param[in] codeLen uint8_t Level of the previos node of the tree
-  @return Pointer to the generated haffman table
+  @return Pointer to the generated huffman table
 */
-htdata_t* btnodetoht(const btnode_t * const subtreeRoot, htdata_t *haffmanTable, uint64_t code, uint8_t codeLen) {
+htdata_t* btnodetoht(const btnode_t * const subtreeRoot, htdata_t *huffmanTable, uint64_t code, uint8_t codeLen) {
     if (subtreeRoot->left) {
-        btnodetoht(subtreeRoot->left, haffmanTable, (code<<1)+0, codeLen+1u);
+        btnodetoht(subtreeRoot->left, huffmanTable, (code<<1)+0, codeLen+1u);
     }
     if (subtreeRoot->right) {
-        btnodetoht(subtreeRoot->right, haffmanTable, (code<<1)+1, codeLen+1u);
+        btnodetoht(subtreeRoot->right, huffmanTable, (code<<1)+1, codeLen+1u);
     }
     if (!subtreeRoot->left && !subtreeRoot->right){
-        haffmanTable[(uint8_t)subtreeRoot->data.symb].code = code;
-        haffmanTable[(uint8_t)subtreeRoot->data.symb].len = codeLen;
+        huffmanTable[(uint8_t)subtreeRoot->data.symb].code = code;
+        huffmanTable[(uint8_t)subtreeRoot->data.symb].len = codeLen;
     }
-    return haffmanTable;
+    return huffmanTable;
 }
 
 /**
-  @brief Generates haffman table using haffman tree
+  @brief Generates huffman table using huffman tree
 
   Allocates memory for the table.
   Generates table.
-  Destroys haffman tree automatically
-  @param[in] tree bt_t * Pointer to the haffman tree
+  Destroys huffman tree automatically
+  @param[in] tree bt_t * Pointer to the huffman tree
   @see btnodetoht
-  @return Pointer to the generated haffman table
+  @return Pointer to the generated huffman table
 */
 htdata_t* bttoht(bt_t** tree) {
-    htdata_t *haffmanTable = (htdata_t*)s_calloc(256, sizeof(htdata_t));
-    htdata_t *ht = btnodetoht((*tree)->root, haffmanTable, 0, 0);
+    htdata_t *huffmanTable = (htdata_t*)s_calloc(256, sizeof(htdata_t));
+    htdata_t *ht = btnodetoht((*tree)->root, huffmanTable, 0, 0);
     bt_free(tree);
     return ht;
 }
 
 /**
-  @brief Generates Haffman tree using priority queue with symbol frequencies
+  @brief Generates Huffman tree using priority queue with symbol frequencies
 
   Destroys priority queue automatically
   @param[in] pq pq_t * Pointer to the priority queue
-  @return Pointer to the generated haffman tree
+  @return Pointer to the generated huffman tree
 */
 bt_t* pqtobt(pq_t **pq) {
     while (true) {
@@ -109,15 +109,15 @@ FILESIZE_T* getFreqTable(INBUF_T *inBuf, FILESIZE_T inBuf_size) {
 }
 
 /**
-  @brief Generates haffman code table using symbol frequency table
+  @brief Generates huffman code table using symbol frequency table
 
   Also calculates size of the encoded text and writes it to the outBuf_size.
   @param[in] freqTable FILESIZE_T * Pointer to the symbol frequency table
   @param[out] outBuf_size FILESIZE_T * Pointer to the size of the encoded text
-  @return Pointer to the generated haffman code table
+  @return Pointer to the generated huffman code table
 */
 htdata_t* getCodeTable(FILESIZE_T *freqTable, FILESIZE_T *outBuf_size) {
-    // generate haffman tree using priority queue and symbol frequency table
+    // generate huffman tree using priority queue and symbol frequency table
     pq_t *pq = pq_init(INBUF_T_LIM);
     for (size_t i = 0; i < INBUF_T_LIM; i++) {
         if (freqTable[i]) {
@@ -129,18 +129,18 @@ htdata_t* getCodeTable(FILESIZE_T *freqTable, FILESIZE_T *outBuf_size) {
     }
     bt_t *freqTree = pqtobt(&pq);
 
-    // generate code table from haffman tree
-    htdata_t *haffmanTable = bttoht(&freqTree);
+    // generate code table from huffman tree
+    htdata_t *huffmanTable = bttoht(&freqTree);
 
     // calculate output file size
     *outBuf_size = 0;
     for (uint16_t i = 0; i < 256; i++) {
-        *outBuf_size += (freqTable[i]) * (haffmanTable[i].len);
+        *outBuf_size += (freqTable[i]) * (huffmanTable[i].len);
     }
     *outBuf_size /= OUTBUF_T_SIZE;
     (*outBuf_size)++;
 
-    return haffmanTable;
+    return huffmanTable;
 }
 
 /**
@@ -149,7 +149,7 @@ htdata_t* getCodeTable(FILESIZE_T *freqTable, FILESIZE_T *outBuf_size) {
   @param[out] buf OUTBUF_T * Buffer for encoded text
   @param[out] bufIndex FILESIZE_T * Number of the current element in the buffer
   @param[out] bufSpace int16_t * Pointer to the number of free bits in the current element of the buffer
-  @param[in] symb htdata_t * Pointer to the symbol haffman code
+  @param[in] symb htdata_t * Pointer to the symbol huffman code
 */
 static inline void writeCodeToBuf(OUTBUF_T *buf, FILESIZE_T *bufIndex, int16_t *bufSpace, htdata_t *symb) {
     *bufSpace -= symb->len;
@@ -167,10 +167,14 @@ static inline void writeCodeToBuf(OUTBUF_T *buf, FILESIZE_T *bufIndex, int16_t *
 }
 
 void encodeFile(FILE * const input, FILE * const output) {
-    printInfo(ENCODING_START);
+    // printInfo(ENCODING_START);
 
     // copy input file data to RAM
     FILESIZE_T inBuf_size = getFileSize(input);
+    if (!inBuf_size) {
+        printInfo(FILE_IS_EMPTY);
+        s_exit(0);
+    }
     INBUF_T *inBuf = (INBUF_T*)s_malloc(inBuf_size * sizeof(INBUF_T));
     fread(inBuf, inBuf_size, sizeof(INBUF_T), input);
 
@@ -200,7 +204,7 @@ void encodeFile(FILE * const input, FILE * const output) {
 }
 
 void decodeFile(FILE * const input, FILE * const output) {
-    printInfo(DECODING_START);
+    // printInfo(DECODING_START);
 
     // read freqTable from file
     FILESIZE_T *freqTable = (FILESIZE_T*)s_malloc(INBUF_T_LIM*sizeof(FILESIZE_T));
@@ -222,7 +226,7 @@ void decodeFile(FILE * const input, FILE * const output) {
     OUTBUF_T *inBuf = (OUTBUF_T*)s_malloc(inBuf_size * sizeof(OUTBUF_T));
     fread(inBuf, inBuf_size, sizeof(OUTBUF_T), input);
 
-    // generate haffman tree using priority queue and symbol frequency table
+    // generate huffman tree using priority queue and symbol frequency table
     pq_t *pq = pq_init(INBUF_T_LIM);
     for (size_t i = 0; i < INBUF_T_LIM; i++) {
         if (freqTable[i]) {

@@ -24,7 +24,8 @@
 #define ERROR_PREFIX "Error:"
 #define INFO_PREFIX "Info:"
 
-// haffman.c
+// huffman.c
+#define FILE_IS_EMPTY "input file is empty"
 #define ENCODING_START "file encoding started"
 #define DECODING_START "file decoding started"
 
